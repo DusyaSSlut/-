@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог - Техномир</title>
+    <link rel="stylesheet" href="csski/main.css">
+    <style>
+        .catalog-page { padding: 40px 0; }
+        .catalog-title { font-size: 2rem; margin-bottom: 30px; color: var(--dark-blue); text-align: center; }
+        .filters { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eee; justify-content: center; }
+        .filter-btn { padding: 10px 24px; background: transparent; border: 2px solid var(--medium-teal); color: var(--dark-blue); border-radius: 30px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .filter-btn:hover, .filter-btn.active { background: var(--medium-teal); color: white; }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        .product-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.08); transition: 0.3s; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .product-img { width: 100%; height: 200px; object-fit: cover; background: #f0f0f0; }
+        .product-info { padding: 20px; }
+        .product-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; }
+        .product-price { font-size: 1.3rem; font-weight: 700; color: var(--medium-teal); margin-bottom: 15px; }
+        .product-btn { width: 100%; padding: 10px; background: var(--medium-teal); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .product-btn:hover { background: var(--deep-teal); }
+        .empty-message { text-align: center; padding: 50px; color: #666; font-size: 1.2rem; }
+        .loading { text-align: center; padding: 50px; font-size: 1.2rem; color: var(--medium-teal); }
+        @media (max-width: 768px) { .products-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); } .filters { justify-content: center; } }
+        @media (max-width: 576px) { .products-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <main>
+        <header>
+            <div class="container">
+                <a href="index.html" class="logo-link"><img src="img/logo.png" alt="Техномир" class="logo-image"></a>
+                <div class="header-actions">
+                    <div class="contacts-text">
+                        <a href="tel:+996XXXXXXXXX" class="contact-phone">+996 XXX XXX XXX</a>
+                        <a href="tel:+996XXXXXXXXX" class="contact-phone">+996 XXX XXX XXX</a>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" class="search-input" placeholder="Поиск...">
+                        <button class="search-btn">🔍</button>
+                        <button class="clear-btn">✕</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <nav class="main-nav">
+            <div class="container">
+                <ul class="nav-menu">
+                    <li><a href="index.html" class="nav-link">Главная</a></li>
+                    <li><a href="catalog.html" class="nav-link active">Каталог</a></li>
+                    <li><a href="catalog.html?category=components" class="nav-link">Комплектующие</a></li>
+                    <li><a href="catalog.html?category=cctv" class="nav-link">Видеонаблюдение</a></li>
+                    <li><a href="catalog.html?category=laptops" class="nav-link">Ноутбуки</a></li>
+                    <li><a href="orders.html" class="nav-link">Мои заказы</a></li>
+                    <li><a href="magazzz.html" class="nav-link"><img src="img/shopping-cart.svg" alt="Корзина" style="width: 20px; height: 20px;"></a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <section class="catalog-page">
+            <div class="container">
+                <h1 class="catalog-title">Каталог товаров</h1>
+                <div class="filters">
+                    <button class="filter-btn active" data-cat="all">Все</button>
+                    <button class="filter-btn" data-cat="components">Комплектующие</button>
+                    <button class="filter-btn" data-cat="periphery">Периферия</button>
+                    <button class="filter-btn" data-cat="cctv">Видеонаблюдение</button>
+                    <button class="filter-btn" data-cat="laptops">Ноутбуки</button>
+                </div>
+                <div class="products-grid" id="productsGrid">
+                    <div class="loading">Загрузка...</div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-logo"><img src="img/logo.png" alt="Техномир" class="footer-logo-img"><p class="footer-description">Интернет-магазин компьютерной техники</p></div>
+                    <!-- <div class="footer-links"><h4>Информация</h4><ul><li><a href="#">О нас</a></li><li><a href="#">Доставка</a></li><li><a href="#">Оплата</a></li><li><a href="#">Гарантия</a></li></ul></div>
+                    <div class="footer-contacts"><h4>Контакты</h4><p>+996 XXX XXX XXX</p><p>+996 XXX XXX XXX</p><p>info@tehnomir.kg</p></div> -->
+                </div>
+                <div class="footer-bottom"><p>© 2026 Техномир. Все права защищены.</p></div>
+            </div>
+        </footer>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="catalog.js"></script>
+    <script>
+       
+        async function loadSiteSettings() {
+            try {
+                await initSupabase();
+                
+                if (!supabaseClient) {
+                    console.log('supabaseClient не инициализирован');
+                    return;
+                }
+                
+                const { data: settings, error } = await supabaseClient.from('site_settings').select('*');
+                
+                if (error) {
+                    console.error('Ошибка загрузки:', error);
+                    return;
+                }
+                
+                if (settings && settings.length > 0) {
+                    settings.forEach(s => {
+                      
+                        if (s.key === 'color_dark') document.documentElement.style.setProperty('--dark-blue', s.value);
+                        if (s.key === 'color_deep') document.documentElement.style.setProperty('--deep-teal', s.value);
+                        if (s.key === 'color_medium') document.documentElement.style.setProperty('--medium-teal', s.value);
+                        if (s.key === 'color_light') document.documentElement.style.setProperty('--light-teal', s.value);
+                        if (s.key === 'color_white') document.documentElement.style.setProperty('--white', s.value);
+                        
+                     
+                        if (s.key === 'phone1') {
+                            const phones = document.querySelectorAll('.contact-phone');
+                            if (phones[0]) phones[0].innerText = s.value;
+                        }
+                        if (s.key === 'phone2') {
+                            const phones = document.querySelectorAll('.contact-phone');
+                            if (phones[1]) phones[1].innerText = s.value;
+                        }
+                        
+                     
+                        if (s.key === 'copyright') {
+                            const footer = document.querySelector('.footer-bottom p');
+                            if (footer) footer.innerText = s.value;
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error('Ошибка:', err);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', loadSiteSettings);
+    </script>
+</body>
+</html>

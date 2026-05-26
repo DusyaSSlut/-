@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход - Техномир</title>
+    <link rel="stylesheet" href="csski/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <h1>Вход</h1>
+            <input type="text" id="username" placeholder="Логин">
+            <input type="password" id="password" placeholder="Пароль">
+            <button id="loginBtn">Войти</button>
+            <div class="info">
+                <a href="register.html">Зарегистрироваться</a>
+            </div>
+            <div id="errorMsg" class="error"></div>
+        </div>
+    </div>
+
+    <script>
+        const loginBtn = document.getElementById('loginBtn');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const errorMsg = document.getElementById('errorMsg');
+
+        async function doLogin() {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+            
+            if (!username || !password) {
+                errorMsg.innerText = 'Введите логин и пароль';
+                return;
+            }
+            
+            await initSupabase();
+            
+            const { data, error } = await supabaseClient
+                .from('users')
+                .select('*')
+                .eq('username', username)
+                .eq('password', password);
+            
+            if (error || !data || data.length === 0) {
+                errorMsg.innerText = 'Неверный логин или пароль';
+                return;
+            }
+            
+            const user = data[0];
+            localStorage.setItem('technomir_user', JSON.stringify(user));
+            
+            if (user.role === 'admin') {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+        
+        loginBtn.onclick = doLogin;
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') doLogin();
+        });
+    </script>
+</body>
+</html>
