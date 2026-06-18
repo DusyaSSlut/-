@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Админ-панель - Техномир</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:system-ui;background:#f5f5f5;padding:20px}
+        .container{max-width:1400px;margin:0 auto}
+        .header{background:#17252A;color:#fff;padding:20px;border-radius:12px;display:flex;justify-content:space-between;margin-bottom:30px}
+        .tabs{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+        .tab-btn{padding:12px 24px;background:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold}
+        .tab-btn.active{background:#3AAFA9;color:#fff}
+        .tab-content{display:none}
+        .tab-content.active{display:block}
+        .btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:bold}
+        .btn-add{background:#3AAFA9;color:#fff}
+        .btn-save{background:#17252A;color:#fff}
+        .btn-delete{background:#ff4757;color:#fff;padding:6px 12px}
+        table{width:100%;background:#fff;border-radius:12px;border-collapse:collapse}
+        th,td{padding:12px;text-align:left;border-bottom:1px solid #eee}
+        th{background:#f9f9f9}
+        input,select{width:100%;padding:8px;border:1px solid #ddd;border-radius:6px}
+        .product-img{width:50px;height:50px;object-fit:cover;border-radius:8px}
+        .logout-btn{background:rgba(255,255,255,0.2);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer}
+        .color-input{width:60px;height:40px;cursor:pointer;border:1px solid #ddd;border-radius:6px}
+        .carousel-item{background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px}
+        .color-row{display:flex;gap:15px;flex-wrap:wrap;margin-bottom:20px}
+        .color-item{flex:1;min-width:100px}
+        .color-item label{display:block;margin-bottom:5px;font-size:12px;color:#666}
+        .form-group{margin-bottom:15px}
+        .form-group label{display:block;margin-bottom:5px;font-weight:bold;color:#17252A}
+        .toast{position:fixed;bottom:20px;right:20px;background:#17252A;color:#fff;padding:12px 24px;border-radius:8px;opacity:0;transition:0.3s;z-index:9999}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Админ-панель</h1>
+        <div>
+            <span id="userEmail" style="margin-right:15px"></span>
+            <button class="logout-btn" onclick="logout()">Выйти</button>
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('catalog', event)">Каталог</button>
+        <button class="tab-btn" onclick="showTab('main', event)">Оформление</button>
+    </div>
+    
+    <div id="tab-catalog" class="tab-content active">
+        <button class="btn btn-add" id="addBtn">+ Добавить товар</button>
+        <button class="btn btn-save" id="saveBtn" style="margin-left:10px">Сохранить все</button>
+        <div style="margin-top:20px;overflow-x:auto">
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Фото</th><th>Название</th><th>Цена</th><th>Скидка %</th><th>Категория</th><th>Действия</th></tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <div id="tab-main" class="tab-content">
+       
+        <div class="card" style="background:#fff;padding:20px;border-radius:12px;margin-bottom:20px">
+            <h3 style="margin-bottom:20px;color:#17252A">Цвета сайта</h3>
+            <div class="color-row">
+                <div class="color-item">
+                    <label>Темно-синий</label>
+                    <input type="color" id="cDark" class="color-input" value="#17252A">
+                </div>
+                <div class="color-item">
+                    <label>Бирюзовый тёмный</label>
+                    <input type="color" id="cDeep" class="color-input" value="#287A78">
+                </div>
+                <div class="color-item">
+                    <label>Бирюзовый средний</label>
+                    <input type="color" id="cMedium" class="color-input" value="#3AAFA9">
+                </div>
+                <div class="color-item">
+                    <label>Светло-бирюзовый</label>
+                    <input type="color" id="cLight" class="color-input" value="#DEF2F1">
+                </div>
+                <div class="color-item">
+                    <label>Белый</label>
+                    <input type="color" id="cWhite" class="color-input" value="#FEFFFF">
+                </div>
+            </div>
+            <button class="btn btn-save" onclick="applyColors()">Применить цвета</button>
+        </div>
+<div class="card" style="background:#fff;padding:20px;border-radius:12px;margin-bottom:20px">
+    <h3 style="margin-bottom:20px;color:#17252A">Текст на главной</h3>
+    <div class="form-group">
+        <label>Заголовок карусели</label>
+        <input type="text" id="txtCarousel" placeholder="Заголовок категории" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px">
+    </div>
+    <div class="form-group">
+        <label>Телефон 1</label>
+        <input type="text" id="txtPhone1" placeholder="Телефон 1" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px">
+    </div>
+    <div class="form-group">
+        <label>Телефон 2</label>
+        <input type="text" id="txtPhone2" placeholder="Телефон 2" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px">
+    </div>
+    <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="txtEmail" placeholder="Email" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px">
+    </div>
+    <div class="form-group">
+        <label>Копирайт</label>
+        <input type="text" id="txtCopyright" placeholder="Копирайт" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px">
+    </div>
+    <button class="btn btn-save" onclick="saveTexts()">Сохранить текст</button>
+</div>
+        <div class="card" style="background:#fff;padding:20px;border-radius:12px;margin-bottom:20px">
+            <h3 style="margin-bottom:20px;color:#17252A">Слайды карусели</h3>
+            <div id="carouselEditor"></div>
+            <button class="btn btn-add" onclick="addCarousel()" style="margin-top:15px">+ Добавить слайд</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+let products = [], carouselData = [];
+
+function showToast(msg, isError = false) {
+    const toast = document.getElementById('toast');
+    toast.innerText = msg;
+    toast.style.backgroundColor = isError ? '#ff4757' : '#17252A';
+    toast.style.opacity = '1';
+    setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+}
+
+
+async function loadCatalog() {
+    await initSupabase();
+    
+    if (!currentUser || currentUser.role !== 'admin') {
+        alert('Доступ только администратору');
+        window.location.href = 'index.html';
+        return;
+    }
+    
+    document.getElementById('userEmail').innerText = currentUser?.email || '';
+    products = await getProducts();
+    console.log('Загружено товаров:', products.length);
+    renderTable();
+}
+
+function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    if (!products.length) {
+        tbody.innerHTML = '<tr><td colspan="7">Нет товаров. Добавьте первый.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = products.map((p, i) => `
+        <tr>
+            <td>${p.id}</td>
+            <td><img src="${p.img}" class="product-img" onerror="this.src='https://placehold.co/50x50'"></td>
+            <td><input id="n${i}" value="${escapeHtml(p.name)}" style="min-width:200px"></td>
+            <td><input id="pr${i}" type="number" value="${p.price}" style="width:100px"></td>
+            <td><input id="disc${i}" type="number" value="${p.discount || 0}" style="width:70px" placeholder="%"></td>
+            <td>
+                <select id="cat${i}">
+                    <option ${p.category === 'components' ? 'selected' : ''} value="components">Комплектующие</option>
+                    <option ${p.category === 'periphery' ? 'selected' : ''} value="periphery">Периферия</option>
+                    <option ${p.category === 'cctv' ? 'selected' : ''} value="cctv">Видеонаблюдение</option>
+                    <option ${p.category === 'laptops' ? 'selected' : ''} value="laptops">Ноутбуки</option>
+                </select>
+            </td>
+            <td><button class="btn-delete" onclick="del(${p.id})">Удалить</button></td>
+        </tr>
+    `).join('');
+}
+
+function escapeHtml(s) {
+    if (!s) return '';
+    return s.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+}
+
+async function saveAll() {
+    for (let i = 0; i < products.length; i++) {
+        await updateProduct(products[i].id, {
+            name: document.getElementById(`n${i}`).value,
+            price: parseInt(document.getElementById(`pr${i}`).value),
+            category: document.getElementById(`cat${i}`).value
+        });
+        const discount = parseInt(document.getElementById(`disc${i}`).value) || 0;
+        await updateProductDiscount(products[i].id, discount);
+    }
+    showToast('Товары сохранены');
+    await loadCatalog();
+}
+
+async function del(id) {
+    if (confirm('Удалить товар?')) {
+        await deleteProduct(id);
+        showToast('Товар удалён');
+        await loadCatalog();
+    }
+}
+
+document.getElementById('addBtn').onclick = async () => {
+    await addProduct({
+        name: 'Новый товар',
+        price: 10000,
+        category: 'components',
+        img: 'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=400'
+    });
+    showToast('Товар добавлен');
+    await loadCatalog();
+};
+document.getElementById('saveBtn').onclick = saveAll;
+
+async function loadColors() {
+    const s = await getSiteSettings();
+    s.forEach(x => {
+        if (x.key === 'color_dark') document.getElementById('cDark').value = x.value;
+        if (x.key === 'color_deep') document.getElementById('cDeep').value = x.value;
+        if (x.key === 'color_medium') document.getElementById('cMedium').value = x.value;
+        if (x.key === 'color_light') document.getElementById('cLight').value = x.value;
+        if (x.key === 'color_white') document.getElementById('cWhite').value = x.value;
+    });
+}
+
+async function loadTexts() {
+    const s = await getSiteSettings();
+    s.forEach(x => {
+        if (x.key === 'carousel_title') document.getElementById('txtCarousel').value = x.value;
+        if (x.key === 'phone1') document.getElementById('txtPhone1').value = x.value;
+        if (x.key === 'phone2') document.getElementById('txtPhone2').value = x.value;
+        if (x.key === 'contact_email') document.getElementById('txtEmail').value = x.value;
+        if (x.key === 'copyright') document.getElementById('txtCopyright').value = x.value;
+    });
+}
+
+async function applyColors() {
+    await updateSiteSetting('color_dark', document.getElementById('cDark').value);
+    await updateSiteSetting('color_deep', document.getElementById('cDeep').value);
+    await updateSiteSetting('color_medium', document.getElementById('cMedium').value);
+    await updateSiteSetting('color_light', document.getElementById('cLight').value);
+    await updateSiteSetting('color_white', document.getElementById('cWhite').value);
+    showToast('Цвета сохранены');
+}
+
+async function saveTexts() {
+    await updateSiteSetting('carousel_title', document.getElementById('txtCarousel').value);
+    await updateSiteSetting('phone1', document.getElementById('txtPhone1').value);
+    await updateSiteSetting('phone2', document.getElementById('txtPhone2').value);
+    await updateSiteSetting('contact_email', document.getElementById('txtEmail').value);
+    await updateSiteSetting('copyright', document.getElementById('txtCopyright').value);
+    showToast('Текст сохранён');
+}
+
+async function loadCarouselAdmin() {
+    carouselData = await getCarousel();
+    const div = document.getElementById('carouselEditor');
+    if (!carouselData.length) {
+        div.innerHTML = '<p style="color:#999; text-align:center; padding:20px;">Нет слайдов. Добавьте первый.</p>';
+        return;
+    }
+    div.innerHTML = carouselData.map(s => `
+        <div class="carousel-item">
+            <input placeholder="Заголовок" value="${escapeHtml(s.title)}" onchange="updateCarouselField(${s.id}, 'title', this.value)" style="width:100%;margin-bottom:10px">
+            <input placeholder="Текст" value="${escapeHtml(s.text)}" onchange="updateCarouselField(${s.id}, 'text', this.value)" style="width:100%;margin-bottom:10px">
+            <input placeholder="Картинка" value="${s.img}" onchange="updateCarouselField(${s.id}, 'img', this.value)" style="width:100%;margin-bottom:10px">
+            <button class="btn-delete" onclick="deleteCarousel(${s.id})">🗑️ Удалить слайд</button>
+        </div>
+    `).join('');
+}
+
+async function updateCarouselField(id, field, val) {
+    await updateCarouselItem(id, { [field]: val });
+    showToast('Слайд обновлён');
+}
+
+async function deleteCarousel(id) {
+    if (confirm('Удалить слайд?')) {
+        await deleteCarouselItem(id);
+        showToast('Слайд удалён');
+        await loadCarouselAdmin();
+    }
+}
+
+async function addCarousel() {
+    const order = carouselData.length + 1;
+    await addCarouselItem({ title: 'Новый слайд', text: 'Описание', img: 'img/placeholder.jpg', sort_order: order });
+    showToast('Слайд добавлен');
+    await loadCarouselAdmin();
+}
+
+function showTab(tab, event) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(`tab-${tab}`).classList.add('active');
+    if (event && event.target) {
+        event.target.classList.add('active');
+    }
+    if (tab === 'main') {
+        loadColors();
+        loadTexts();
+        loadCarouselAdmin();
+    }
+}
+
+
+function logout() {
+    localStorage.removeItem('technomir_user');
+    window.location.href = 'index.html';
+}
+
+
+loadCatalog();
+</script>
+
+<script>
+    
+    async function loadSiteSettings() {
+        try {
+            await initSupabase();
+            
+            if (!supabaseClient) {
+                console.log('supabaseClient не инициализирован');
+                return;
+            }
+            
+            const { data: settings, error } = await supabaseClient.from('site_settings').select('*');
+            
+            if (error) {
+                console.error('Ошибка загрузки:', error);
+                return;
+            }
+            
+            if (settings && settings.length > 0) {
+                settings.forEach(s => {
+                    
+                    if (s.key === 'color_dark') document.documentElement.style.setProperty('--dark-blue', s.value);
+                    if (s.key === 'color_deep') document.documentElement.style.setProperty('--deep-teal', s.value);
+                    if (s.key === 'color_medium') document.documentElement.style.setProperty('--medium-teal', s.value);
+                    if (s.key === 'color_light') document.documentElement.style.setProperty('--light-teal', s.value);
+                    if (s.key === 'color_white') document.documentElement.style.setProperty('--white', s.value);
+                    
+                    
+                    if (s.key === 'phone1') {
+                        const phones = document.querySelectorAll('.contact-phone');
+                        if (phones[0]) phones[0].innerText = s.value;
+                    }
+                    if (s.key === 'phone2') {
+                        const phones = document.querySelectorAll('.contact-phone');
+                        if (phones[1]) phones[1].innerText = s.value;
+                    }
+                    
+                   
+                    if (s.key === 'copyright') {
+                        const footer = document.querySelector('.footer-bottom p');
+                        if (footer) footer.innerText = s.value;
+                    }
+                });
+            }
+        } catch (err) {
+            console.error('Ошибка:', err);
+        }
+    }
+    document.addEventListener('DOMContentLoaded', loadSiteSettings);
+</script>
+</body>
+</html>
+</body>
+</html>
